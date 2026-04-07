@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Project</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head> 
+<body>
+    <nav>
+        <a href="/">Inicio</a>  
+        <a href="/registrar">Registrar Ruta</a>
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+
+<footer>
+    <hr>
+    <p style="text-align: center;">&copy; Transport Project - Martin Burga</p>
+</footer>
+</html>
