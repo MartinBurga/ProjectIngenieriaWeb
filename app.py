@@ -6,7 +6,7 @@ rutas_db = []
 
 @app.route("/")
 def index():
-    return render_template("index.html", rutas=rutas_db)
+    return render_template("login.html", rutas=rutas_db)
 
 @app.route('/registrar', methods=['GET', 'POST'])
 def registrar_ruta():
