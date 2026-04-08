@@ -1,17 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
-from routes.rutas import rutas
-from flask import Blueprint
+from flask import Blueprint, app, request
 
 rutas = Blueprint('rutas', __name__)
-
-app = Flask(__name__)
-
-rutas_db = [] 
-
-@app.route("/")
-def index():
-    return render_template("index.html", rutas=rutas_db)
-
+    
 @rutas.route('/registrar', methods=['GET', 'POST'])
 def registrar_ruta():
     if request.method == 'POST':
@@ -39,7 +29,7 @@ def registrar_ruta():
 
     return render_template("form_ruta.html", total_rutas=len(rutas_db), edit_mode=False)
 
-@app.route('/editar/<id>', methods=['GET', 'POST'])
+@rutas.route('/editar/<id>', methods=['GET', 'POST'])
 def editar_ruta(id):
     # Buscamos la ruta por ID
     ruta = next((r for r in rutas_db if str(r['id']) == str(id)), None)
@@ -54,12 +44,3 @@ def editar_ruta(id):
         return redirect(url_for('index'))
     
     return render_template("form_ruta.html", ruta=ruta, edit_mode=True)
-
-@app.route('/eliminar/<id>')
-def eliminar_ruta(id):
-    global rutas_db
-    rutas_db = [r for r in rutas_db if str(r['id']) != str(id)]
-    return redirect(url_for('index'))
-
-if __name__ == "__main__":
-    app.run(debug=True)
