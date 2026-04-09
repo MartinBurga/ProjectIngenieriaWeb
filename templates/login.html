@@ -9,7 +9,7 @@
 </head>
 
 <body class="login__page">
-    <div class="login-container">
+    <form class="login-container" method="post" action="{{ url_for('usuarios.login') }}">
         <h1 class="login__title">Login</h1>
         <div class="login__form">
             <div class="login__username">
@@ -26,7 +26,7 @@
                 <button type="submit" class="submit">Login</button>
             </div>
         </div>
-    </div>
+    </form>
 </body>
 <footer class="login__footer">
     <p style="text-align: center;">&copy; Rootz - Martin Burga</p>

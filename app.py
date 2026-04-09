@@ -1,65 +1,31 @@
-from flask import Flask, render_template, request, redirect, url_for
-from routes.rutas import rutas
-from flask import Blueprint
+from flask import Flask, render_template, Blueprint
+from utils.db import db
+import pymysql
+from models.ruta import Ruta
+from routes.rutas import rutas_bp
+from routes.usuarios import usuarios_bp
 
-rutas = Blueprint('rutas', __name__)
+pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
+app.register_blueprint(rutas_bp)
+app.register_blueprint(usuarios_bp)
 
-rutas_db = [] 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost:3306/rootzdb'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.secret_key = 'SecretKeyForSessionManagement'
+
+db.init_app(app) 
 
 @app.route("/")
+def home():
+    return render_template('login.html')
+
+@app.route("/index")
 def index():
-    return render_template("index.html", rutas=rutas_db)
-
-@rutas.route('/registrar', methods=['GET', 'POST'])
-def registrar_ruta():
-    if request.method == 'POST':
-        # Captura de datos del transporte
-        id_ruta = request.form.get('id')
-        nombre = request.form.get('nombre_ruta')
-        origen = request.form.get('origen')
-        destino = request.form.get('destino')
-        distancia = float(request.form.get('distancia') or 0)
-        precio_pasaje = float(request.form.get('precio_pasaje') or 0)
-        peajes = float(request.form.get('peajes') or 0)
-        
-        nueva_ruta = {
-            "id": id_ruta,
-            "nombre": nombre,
-            "origen": origen,
-            "destino": destino,
-            "distancia": distancia,
-            "precio_pasaje": precio_pasaje,
-            "peajes": peajes
-        }
-        
-        rutas_db.append(nueva_ruta)
-        return redirect(url_for('index'))
-
-    return render_template("form_ruta.html", total_rutas=len(rutas_db), edit_mode=False)
-
-@app.route('/editar/<id>', methods=['GET', 'POST'])
-def editar_ruta(id):
-    # Buscamos la ruta por ID
-    ruta = next((r for r in rutas_db if str(r['id']) == str(id)), None)
-    
-    if request.method == 'POST':
-        ruta['nombre'] = request.form.get('nombre_ruta')
-        ruta['origen'] = request.form.get('origen')
-        ruta['destino'] = request.form.get('destino')
-        ruta['distancia'] = float(request.form.get('distancia') or 0)
-        ruta['precio_pasaje'] = float(request.form.get('precio_pasaje') or 0)
-        ruta['peajes'] = float(request.form.get('peajes') or 0)
-        return redirect(url_for('index'))
-    
-    return render_template("form_ruta.html", ruta=ruta, edit_mode=True)
-
-@app.route('/eliminar/<id>')
-def eliminar_ruta(id):
-    global rutas_db
-    rutas_db = [r for r in rutas_db if str(r['id']) != str(id)]
-    return redirect(url_for('index'))
+    rutas = Ruta.query.all()
+    return render_template("index.html", rutas=rutas)
 
 if __name__ == "__main__":
     app.run(debug=True)

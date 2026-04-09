@@ -8,8 +8,8 @@
 </head> 
 <body>
     <nav>
-        <a href="/">Inicio</a>  
-        <a href="/registrar">Registrar Ruta</a>
+        <a href="{{ url_for('index') }}">Inicio</a>  
+        <a href="{{ url_for('rutas.registrar_ruta') }}">Registrar Ruta</a>
     </nav>
     <hr>
     {% block content %}{% endblock %}

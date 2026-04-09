@@ -1,46 +1,53 @@
-from flask import Blueprint, app, request
+from flask import Blueprint, request, render_template, redirect, url_for
+from models.ruta import Ruta
+from utils.db import db
 
-rutas = Blueprint('rutas', __name__)
-    
-@rutas.route('/registrar', methods=['GET', 'POST'])
+rutas_bp = Blueprint('rutas', __name__) 
+
+@rutas_bp.route('/registrar', methods=['GET', 'POST'])
 def registrar_ruta():
     if request.method == 'POST':
-        # Captura de datos del transporte
-        id_ruta = request.form.get('id')
-        nombre = request.form.get('nombre_ruta')
-        origen = request.form.get('origen')
-        destino = request.form.get('destino')
-        distancia = float(request.form.get('distancia') or 0)
-        precio_pasaje = float(request.form.get('precio_pasaje') or 0)
-        peajes = float(request.form.get('peajes') or 0)
-        
-        nueva_ruta = {
-            "id": id_ruta,
-            "nombre": nombre,
-            "origen": origen,
-            "destino": destino,
-            "distancia": distancia,
-            "precio_pasaje": precio_pasaje,
-            "peajes": peajes
-        }
-        
-        rutas_db.append(nueva_ruta)
+        nueva_ruta = Ruta(
+            nombreRuta=request.form.get('nombre_ruta'),
+            origen=request.form.get('origen'),
+            destino=request.form.get('destino'),
+            distancia=float(request.form.get('distancia') or 0),
+            precio_pasaje=float(request.form.get('precio_pasaje') or 0),
+            pasajeros_Semanal=int(request.form.get('pasajeros_Semanal') or 0)
+        )
+
+        db.session.add(nueva_ruta)
+        db.session.commit()
+
         return redirect(url_for('index'))
 
-    return render_template("form_ruta.html", total_rutas=len(rutas_db), edit_mode=False)
+    total_rutas = Ruta.query.count()
+    return render_template("form_ruta.html", total_rutas=total_rutas, edit_mode=False)
 
-@rutas.route('/editar/<id>', methods=['GET', 'POST'])
+@rutas_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar_ruta(id):
-    # Buscamos la ruta por ID
-    ruta = next((r for r in rutas_db if str(r['id']) == str(id)), None)
-    
+    ruta = Ruta.query.get_or_404(id)
+
     if request.method == 'POST':
-        ruta['nombre'] = request.form.get('nombre_ruta')
-        ruta['origen'] = request.form.get('origen')
-        ruta['destino'] = request.form.get('destino')
-        ruta['distancia'] = float(request.form.get('distancia') or 0)
-        ruta['precio_pasaje'] = float(request.form.get('precio_pasaje') or 0)
-        ruta['peajes'] = float(request.form.get('peajes') or 0)
+        ruta.nombreRuta = request.form.get('nombre_ruta')
+        ruta.origen = request.form.get('origen')
+        ruta.destino = request.form.get('destino')
+        ruta.distancia = float(request.form.get('distancia') or 0)
+        ruta.precio_pasaje = float(request.form.get('precio_pasaje') or 0)
+        ruta.pasajeros_Semanal = int(request.form.get('pasajeros_Semanal') or 0)
+
+        db.session.commit()
+
         return redirect(url_for('index'))
-    
+
     return render_template("form_ruta.html", ruta=ruta, edit_mode=True)
+
+
+@rutas_bp.route('/eliminar/<int:id>')
+def eliminar_ruta(id):
+    ruta = Ruta.query.get_or_404(id)
+
+    db.session.delete(ruta)
+    db.session.commit()
+
+    return redirect(url_for('index'))

@@ -4,7 +4,7 @@
 {% block content %}
     <h1>{{ 'Editar Ruta' if edit_mode else 'Registro de Ruta' }}</h1>
 
-    <form action="{{ url_for('editar_ruta', id=ruta.id) if edit_mode else url_for('registrar_ruta') }}" method="post" style="max-width: 600px;">
+    <form action="{{ url_for('rutas.editar_ruta', id=ruta.id) if edit_mode else url_for('rutas.registrar_ruta') }}" method="post" style="max-width: 600px;">
         
         <label>ID:</label><br>
         <input type="text" name="id" value="{{ ruta.id if edit_mode else total_rutas + 1 }}" readonly><br><br>
@@ -33,8 +33,8 @@
                 <input type="number" step="0.01" name="precio_pasaje" value="{{ ruta.precio_pasaje if edit_mode else '' }}" required style="width: 100%;">
             </div>
             <div style="flex:1">
-                <label>Peajes ($):</label>
-                <input type="number" step="0.01" name="peajes" value="{{ ruta.peajes if edit_mode else '0' }}" required style="width: 100%;">
+                <label>Pasajeros Semanales:</label>
+                <input type="number" step="0.01" name="pasajeros_Semanal" value="{{ ruta.pasajeros_Semanal if edit_mode else '' }}" required style="width: 100%;">
             </div>
         </div><br>
 
