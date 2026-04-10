@@ -1,6 +1,7 @@
 from flask import Flask, render_template, Blueprint
 from utils.db import db
 import pymysql
+from utils.auth import login_required
 from models.ruta import Ruta
 from routes.rutas import rutas_bp
 from routes.usuarios import usuarios_bp
@@ -23,6 +24,7 @@ def home():
     return render_template('login.html')
 
 @app.route("/index")
+@login_required
 def index():
     rutas = Ruta.query.all()
     return render_template("index.html", rutas=rutas)

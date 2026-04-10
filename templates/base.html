@@ -7,9 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head> 
 <body>
-    <nav>
-        <a href="{{ url_for('index') }}">Inicio</a>  
-        <a href="{{ url_for('rutas.registrar_ruta') }}">Registrar Ruta</a>
+    <nav class="navbar">
+
+        <div class="logo">
+            <h2>Rootz</h2>
+        </div>
+        <ul class="nav__links">
+            <li class="index__link"><a href="{{ url_for('index') }}">Inicio</a></li>
+            <li class="registrar__link"><a href="{{ url_for('rutas.registrar_ruta') }}">Registrar Ruta</a></li>
+        </ul>
     </nav>
     <hr>
     {% block content %}{% endblock %}

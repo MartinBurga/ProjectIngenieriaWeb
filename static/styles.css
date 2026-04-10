@@ -1,13 +1,33 @@
-nav {
+/* Estilos para la barra de navegación */
+.navbar {
+    justify-content: space-between;
     background-color: #2a4d8c;
+    display: flex;;
+    align-items: center;
     padding: 10px;
-    text-align: center;
+}
+.logo {
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    
+}
+.nav__links {
+    list-style-type: none;
+    display: flex;
+    flex-direction: row;
+    color: #fff;
+    margin: 0 10px;
+    padding: 0;
+    gap: 30px;
 }
 
-nav a {
+.index__link a, .registrar__link a {
     color: #fff;
     text-decoration: none;
-    margin: 0 10px;
+    font-size: 18px;
 }
 
 /* Estilos para la página de login */
