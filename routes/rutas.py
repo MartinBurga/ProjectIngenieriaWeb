@@ -6,7 +6,6 @@ from utils.db import db
 rutas_bp = Blueprint('rutas', __name__) 
 
 @rutas_bp.route('/registrar', methods=['GET', 'POST'])
-@login_required
 def registrar_ruta():
     if request.method == 'POST':
         nueva_ruta = Ruta(
@@ -27,7 +26,6 @@ def registrar_ruta():
     return render_template("form_ruta.html", total_rutas=total_rutas, edit_mode=False)
 
 @rutas_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
-@login_required
 def editar_ruta(id):
     ruta = Ruta.query.get_or_404(id)
 
@@ -47,7 +45,6 @@ def editar_ruta(id):
 
 
 @rutas_bp.route('/eliminar/<int:id>')
-@login_required
 def eliminar_ruta(id):
     ruta = Ruta.query.get_or_404(id)
 
