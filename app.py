@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.register_blueprint(rutas_bp)
 app.register_blueprint(usuarios_bp)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://u4d5alnxxnbo1gwp:yLgfep9D6PtRqRSxAFOr@b1ygrymdoru9zdb7umuw-mysql.services.clever-cloud.com:3306/b1ygrymdoru9zdb7umuw'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost:3306/rootzdb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.secret_key = 'SecretKeyForSessionManagement'
@@ -24,7 +24,7 @@ def home():
     return render_template('login.html')
 
 @app.route("/index")
-
+@login_required
 def index():
     rutas = Ruta.query.all()
     return render_template("index.html", rutas=rutas)
