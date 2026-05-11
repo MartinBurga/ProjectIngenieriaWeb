@@ -1,21 +1,32 @@
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask, render_template, Blueprint
 from utils.db import db
-import pymysql
+import pymysql, os
+
 from utils.auth import login_required
+
 from models.ruta import Ruta
+from models.viajeRegistro import ViajeRegistro
+from models.costo import Costo
+
 from routes.rutas import rutas_bp
 from routes.usuarios import usuarios_bp
+from routes.costos import costos_bp
+from routes.viajeRegistros import viaje_registros_bp
 
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 app.register_blueprint(rutas_bp)
 app.register_blueprint(usuarios_bp)
+app.register_blueprint(costos_bp)
+app.register_blueprint(viaje_registros_bp)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@localhost:3306/rootzdb'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-app.secret_key = 'SecretKeyForSessionManagement'
+app.secret_key = os.getenv('SECRET_KEY')
 
 db.init_app(app) 
 

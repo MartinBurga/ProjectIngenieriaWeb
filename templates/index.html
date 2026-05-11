@@ -4,7 +4,8 @@
 {% block content %}
 <h1>Inicio</h1>
 
-<div class="table_container">
+<div class="table_container-Rutas">
+    <h3>Rutas</h3>
     {% if rutas and rutas|length > 0 %}
     <table border="1" style="width:100%; border-collapse: collapse;">
         <thead>
@@ -15,28 +16,25 @@
                 <th>Destino</th>
                 <th>Distancia (km)</th>
                 <th>Valor Pasaje</th>
-                <th>Pasajeros Semanales</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for r in rutas %}
+            {% for ruta in rutas %}
             <tr>
-                <td>{{ r.id }}</td>
-                <td>{{ r.nombreRuta }}</td>
-                <td>{{ r.origen }}</td>
-                <td>{{ r.destino }}</td>
-                <td>{{ r.distancia }}</td>
-                <td>${{ r.precio_pasaje }}</td>
-                <td>{{ r.pasajeros_Semanal }}</td>
+                <td>{{ ruta.idRuta }}</td>
+                <td>{{ ruta.nombreRuta }}</td>
+                <td>{{ ruta.origen }}</td>
+                <td>{{ ruta.destino }}</td>
+                <td>{{ ruta.distancia }} km</td>
+                <td>${{ ruta.precio_pasaje }}</td>
                 <td>
-                    <a href="{{ url_for('rutas.editar_ruta', id=r.id) }}">Editar</a>
-                    |
-                    <a href="{{ url_for('rutas.eliminar_ruta', id=r.id) }}"
-                       style="color:red"
-                       onclick="return confirm('¿Eliminar?')">
-                       Eliminar
-                    </a>
+                    <a href="{{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}" class="btn btn-info">Detalles</a>
+
+                    <a href="{{ url_for('rutas.editar_ruta', id=ruta.idRuta) }}" class="btn btn-warning">Editar</a>
+
+                    <a href="{{ url_for('rutas.eliminar_ruta', id=ruta.idRuta) }}" class="btn btn-danger"
+                        onclick="return confirm('¿Estás seguro?')">Eliminar</a>
                 </td>
             </tr>
             {% endfor %}
@@ -46,5 +44,7 @@
     <p>No hay rutas registradas.</p>
     {% endif %}
 </div>
+<div class="table_container-viajes">
+    <h3>Viajes Realizados</h3>
 
-{% endblock %}
+    {% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Detalles – {{ ruta.nombreRuta }}{% endblock %}
+
+{% block content %}
+<div class="detalle-container">
+
+    <h1>Ruta: {{ ruta.nombreRuta }}</h1>
+
+    <div class="info-ruta">
+        <p><strong>Origen:</strong> {{ ruta.origen }}</p>
+        <p><strong>Destino:</strong> {{ ruta.destino }}</p>
+        <p><strong>Distancia:</strong> {{ ruta.distancia }} km</p>
+        <p><strong>Precio por pasaje:</strong> ${{ ruta.precio_pasaje }}</p>
+    </div>
+    
+    <h3>Registros Semanales</h3>
+
+    {% if ruta.viajes %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fecha inicio</th>
+                <th>Fecha fin</th>
+                <th>Pasajeros</th>
+                <th>Ingresos</th>
+                <th>Costos Totales</th>
+                <th>Rentabilidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for viaje in ruta.viajes | sort(attribute='fechaInicio') %}
+                {% set ingresos = viaje.pasajerosSemanal * ruta.precio_pasaje %}
+                <tr>
+                    <td>{{ viaje.fechaInicio }}</td>
+                    <td>{{ viaje.fechaFin }}</td>
+                    <td>{{ viaje.pasajerosSemanal }}</td>
+                    <td>${{ "%.2f"|format(ingresos) }}</td>
+
+                    {% if viaje.costo %}
+                        {% set rentabilidad = ingresos - viaje.costo.total %}
+                        <td>${{ "%.2f"|format(viaje.costo.total) }}</td>
+                        <td>
+                            ${{ "%.2f"|format(rentabilidad) }} {{ '▲' if rentabilidad >= 0 else '▼' }}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('costos.editar_costos', id_viaje=viaje.idViaje) }}"
+                               class="btn btn-sm btn-warning">Editar costos</a>
+                            <a href="{{ url_for('viaje_registros.eliminar_registro', id_viaje=viaje.idViaje) }}"
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('¿Eliminar este registro y sus costos?')">Eliminar</a>
+                        </td>
+                    {% else %}
+                        <td><em>Sin costos</em></td>
+                        <td>—</td>
+                        <td>
+                            <a href="{{ url_for('costos.registrar_costos', id_viaje=viaje.idViaje) }}"
+                               class="btn btn-sm btn-primary">Agregar costos</a>
+                            <a href="{{ url_for('viaje_registros.eliminar_registro', id_viaje=viaje.idViaje) }}"
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('¿Eliminar este registro?')">Eliminar</a>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>Aún no hay registros semanales para esta ruta.</p>
+    {% endif %}
+
+    <div class="form-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver </a>
+        <a href="{{ url_for('viaje_registros.crear_registro', id_ruta=ruta.idRuta) }}" class="btn btn-primary">Nuevo</a>
+    </div>
+</div>
+{% endblock %}

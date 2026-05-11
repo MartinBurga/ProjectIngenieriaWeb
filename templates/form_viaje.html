@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Registro Semanal – {{ ruta.nombreRuta }}{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Registro Semanal</h1>
+    <p class="subtitle">Ruta: <strong>{{ ruta.nombreRuta }}</strong></p>
+    <hr>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('viaje_registros.crear_registro', id_ruta=ruta.idRuta) }}" method="POST">
+
+        <!-- FK: Ruta — dropdown de solo lectura, el id llega por hidden -->
+        <div class="form-group">
+            <label for="sel_ruta">Ruta asignada</label>
+            <select id="sel_ruta" disabled>
+                <option selected>
+                    #{{ ruta.idRuta }} — {{ ruta.nombreRuta }} ({{ ruta.origen }} → {{ ruta.destino }})
+                </option>
+            </select>
+            <input type="hidden" name="id_ruta" value="{{ ruta.idRuta }}">
+        </div>
+
+        <!-- Rango de fechas -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fecha_inicio">Fecha inicio de semana</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio"
+                       required max="{{ today }}">
+            </div>
+            <div class="form-group">
+                <label for="fecha_fin">Fecha fin de semana</label>
+                <input type="date" id="fecha_fin" name="fecha_fin"
+                       required max="{{ today }}">
+            </div>
+        </div>
+
+        <!-- Pasajeros -->
+        <div class="form-group">
+            <label for="pasajeros">Pasajeros transportados en la semana</label>
+            <input type="number" id="pasajeros" name="pasajeros"
+                   min="0" placeholder="Ej: 320" required>
+        </div>
+
+        <div class="info-box">
+            <p>
+                <strong>Precio por pasaje:</strong> ${{ ruta.precio_pasaje }}<br>
+                <em>Los costos operativos se ingresarán en el siguiente paso.</em>
+            </p>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                Siguiente: Ingresar Costos →
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const inicio = document.getElementById('fecha_inicio');
+    const fin    = document.getElementById('fecha_fin');
+
+    function validarFechas() {
+        if (!inicio.value || !fin.value) return;
+        const diffDias = (new Date(fin.value) - new Date(inicio.value)) / 86400000;
+        if (fin.value <= inicio.value) {
+            fin.setCustomValidity('La fecha de fin debe ser posterior al inicio.');
+        } else if (diffDias > 7) {
+            fin.setCustomValidity('El periodo no puede superar 7 días.');
+        } else {
+            fin.setCustomValidity('');
+        }
+    }
+
+    inicio.addEventListener('change', validarFechas);
+    fin.addEventListener('change', validarFechas);
+</script>
+{% endblock %}
