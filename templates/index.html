@@ -2,49 +2,88 @@
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-<h1>Inicio</h1>
+<main>
+    <div class="main-header">
+        <h1>Inicio</h1>
+        <p>Bienvenido a Rootz!</p>
+    </div>
+    <div class="table_container-Rutas">
+        <h3>Rutas</h3>
+        {% if rutas and rutas|length > 0 %}
+        <table class="table-rutas">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Distancia (km)</th>
+                    <th>Valor Pasaje</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ruta in rutas %}
+                <tr>
+                    <td>{{ ruta.idRuta }}</td>
+                    <td>{{ ruta.nombreRuta }}</td>
+                    <td>{{ ruta.origen }}</td>
+                    <td>{{ ruta.destino }}</td>
+                    <td>{{ ruta.distancia }} km</td>
+                    <td>${{ ruta.precio_pasaje }}</td>
+                    <td class="action-buttons>
+                        <a href=" {{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}" class="btn btn-info">Detalles</a>
 
-<div class="table_container-Rutas">
-    <h3>Rutas</h3>
-    {% if rutas and rutas|length > 0 %}
-    <table border="1" style="width:100%; border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Origen</th>
-                <th>Destino</th>
-                <th>Distancia (km)</th>
-                <th>Valor Pasaje</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ruta in rutas %}
-            <tr>
-                <td>{{ ruta.idRuta }}</td>
-                <td>{{ ruta.nombreRuta }}</td>
-                <td>{{ ruta.origen }}</td>
-                <td>{{ ruta.destino }}</td>
-                <td>{{ ruta.distancia }} km</td>
-                <td>${{ ruta.precio_pasaje }}</td>
-                <td>
-                    <a href="{{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}" class="btn btn-info">Detalles</a>
+                        <a href="{{ url_for('rutas.editar_ruta', id=ruta.idRuta) }}" class="btn btn-warning">Editar</a>
 
-                    <a href="{{ url_for('rutas.editar_ruta', id=ruta.idRuta) }}" class="btn btn-warning">Editar</a>
-
-                    <a href="{{ url_for('rutas.eliminar_ruta', id=ruta.idRuta) }}" class="btn btn-danger"
-                        onclick="return confirm('¿Estás seguro?')">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No hay rutas registradas.</p>
-    {% endif %}
-</div>
-<div class="table_container-viajes">
-    <h3>Viajes Realizados</h3>
-
+                        <a href="{{ url_for('rutas.eliminar_ruta', id=ruta.idRuta) }}" class="btn btn-danger"
+                            onclick="return confirm('¿Estás seguro?')">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No hay rutas registradas.</p>
+        {% endif %}
+    </div>
+    <div class="table_container-viajes">
+        <h3>Viajes Realizados</h3>
+        {% if total_viajes and total_viajes > 0 %}
+        {% for ruta in rutas if ruta.viajes %}
+        <div class="ruta-viajes-group">
+            <a class="accordion-btn" data-target="ruta-viajes-{{ ruta.idRuta }}">
+                Ruta: {{ ruta.nombreRuta }}
+            </a>
+            <div id="ruta-viajes-{{ ruta.idRuta }}" class="accordion-content">
+                <table class="ruta-viajes-table">
+                    <thead>
+                        <tr>
+                            <th>ID Ruta</th>
+                            <th>Ruta</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Pasajeros</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for viaje in ruta.viajes %}
+                        <tr>
+                            <td>{{ ruta.idRuta }}</td>
+                            <td>{{ ruta.nombreRuta }}</td>
+                            <td>{{ viaje.fechaInicio }}</td>
+                            <td>{{ viaje.fechaFin }}</td>
+                            <td>{{ viaje.pasajerosSemanal }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No hay viajes registrados.</p>
+        {% endif %}
+    </div>
     {% endblock %}
+</main>

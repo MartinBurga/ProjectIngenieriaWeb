@@ -38,7 +38,8 @@ def home():
 @login_required
 def index():
     rutas = Ruta.query.all()
-    return render_template("index.html", rutas=rutas)
+    total_viajes = sum(len(ruta.viajes) for ruta in rutas)
+    return render_template("index.html", rutas=rutas, total_viajes=total_viajes)
 
 if __name__ == "__main__":
     app.run(debug=True)

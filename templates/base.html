@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} - Project</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head> 
+</head>
+
 <body>
     <nav class="navbar">
-
-        <div class="logo">
-            <h2>Rootz</h2>
+        <div class="navbar_container">
+            <div class="logo">
+                <h2>Rootz</h2>
+            </div>
+            <ul class="nav__links">
+                <li class="index__link"><a href="{{ url_for('index') }}">Inicio</a></li>
+                <li class="registrar__link"><a href="{{ url_for('rutas.registrar_ruta') }}">Registrar Ruta</a></li>
+            </ul>
         </div>
-        <ul class="nav__links">
-            <li class="index__link"><a href="{{ url_for('index') }}">Inicio</a></li>
-            <li class="registrar__link"><a href="{{ url_for('rutas.registrar_ruta') }}">Registrar Ruta</a></li>
-        </ul>
     </nav>
-    <hr>
     {% block content %}{% endblock %}
 </body>
+
 </html>
