@@ -4,6 +4,7 @@ from flask import Flask, render_template, Blueprint
 from utils.db import db
 import pymysql, os
 
+
 from utils.auth import login_required
 
 from models.ruta import Ruta
