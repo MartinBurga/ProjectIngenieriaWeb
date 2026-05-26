@@ -12,7 +12,6 @@ dnspython==2.8.0
 et_xmlfile==2.0.0
 fastapi==0.136.1
 Flask==3.1.2
-Flask-MySQLdb==2.0.0
 Flask-PyMongo==3.0.1
 Flask-SQLAlchemy==3.1.1
 greenlet==3.4.0
