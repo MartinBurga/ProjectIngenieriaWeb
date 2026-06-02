@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class unificarRuta:
 
-    def __init__(self, umbral=75):
+    def __init__(self, umbral=70):
         self.umbral = umbral
         self.similitud = similitud_services()
 

@@ -82,12 +82,14 @@ class similitud_services:
         destino
     ):
 
-        score = 100
+        score = 80
 
-        score -= min(frechet / 20, 40)
-        score -= min(origen / 50, 30)
-        score -= min(destino / 50, 30)
+        score -= min(frechet / 500, 50)
+             
+        score -= min(origen / 200, 25)
 
+        score -= min(destino / 200, 25)
+            
         return max(round(score, 2), 0)
 
     def compare_routes(
