@@ -1,5 +1,9 @@
 from models.ruta import Ruta
 from services.similitud_services import similitud_services
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class unificarRuta:
@@ -12,6 +16,10 @@ class unificarRuta:
         coincidencias = []
 
         if not ruta_actual.polyline:
+            logger.warning(
+                "Ruta %s no tiene polyline; no se pueden buscar coincidencias.",
+                ruta_actual.idRuta
+            )
             return coincidencias
 
         rutas = Ruta.query.filter(
@@ -27,7 +35,13 @@ class unificarRuta:
                     ruta_actual.polyline,
                     ruta.polyline
                 )
-            except Exception:
+            except Exception as error:
+                logger.exception(
+                    "Error comparando ruta %s con ruta %s: %s",
+                    ruta_actual.idRuta,
+                    ruta.idRuta,
+                    error
+                )
                 continue
 
             if resultado["score"] >= self.umbral:

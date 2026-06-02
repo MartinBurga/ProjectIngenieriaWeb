@@ -42,7 +42,7 @@
 /* Estilos para la página de login */
 
 body.login__page {
-    background-image: url("/static/images/loginimage.webp");
+    background-image: url("/static/images/loginImage.webp");
     background-size: cover;
     margin: 0;
     display: flex;
