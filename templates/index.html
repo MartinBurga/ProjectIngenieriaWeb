@@ -19,6 +19,7 @@
                     <th>Destino</th>
                     <th>Distancia (km)</th>
                     <th>Valor Pasaje</th>
+                    <th>Rentabilidad Estimada</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -31,6 +32,19 @@
                     <td>{{ ruta.destino }}</td>
                     <td>{{ ruta.distancia }} km</td>
                     <td>${{ ruta.precio_pasaje }}</td>
+                    <td>
+                        {% set r = rentabilidad_rutas.get(ruta.idRuta) %}
+
+                        {% if r %}
+                        {% if r.es_rentable %}
+                        <span style="color:green; font-weight:bold;">Rentable</span>
+                        {% else %}
+                        <span style="color:red; font-weight:bold;">No rentable</span>
+                        {% endif %}
+                        {% else %}
+                        <em>Sin registros</em>
+                        {% endif %}
+                    </td>
                     <td class="action-buttons">
                         <a href="{{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}" class="btn btn-info">Detalles</a>
 

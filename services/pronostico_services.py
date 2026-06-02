@@ -97,10 +97,16 @@ def pronosticarRentabilidadRuta(
             "limite_inferior": round(float(intervalo.iloc[0]), 2),
             "limite_superior": round(float(intervalo.iloc[1]), 2),
         })
+        
+        promedio_futuro = sum(p["rentabilidad_estimada"] for p in pronosticos) / len(pronosticos)
+        rentabilidad = promedio_futuro > 0
 
     return {
-        "estado": "ok",
-        "mensaje": "Pronostico generado correctamente.",
-        "modelo": modelo_usado,
-        "pronosticos": pronosticos,
-    }
+    "estado": "ok",
+    "mensaje": "Pronostico generado correctamente.",
+    "modelo": modelo_usado,
+    "pronosticos": pronosticos,
+    "rentabilidad_futura": promedio_futuro,
+    "rentabilidad": rentabilidad,
+    }   
+    

@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+
+from services.pronostico_services import pronosticarRentabilidadRuta
 load_dotenv()
 from flask import Flask, render_template, Blueprint
 from utils.db import db
@@ -40,7 +42,55 @@ def home():
 def index():
     rutas = Ruta.query.all()
     total_viajes = sum(len(ruta.viajes) for ruta in rutas)
-    return render_template("index.html", rutas=rutas, total_viajes=total_viajes)
 
+    rentabilidad_rutas = {}
+
+    for ruta in rutas:
+
+        if not ruta.viajes:
+            continue
+
+        rentabilidad_ruta = {
+            "registros_semanales": []
+        }
+
+        for v in ruta.viajes:
+
+            costo = (
+                getattr(v.costos, "monto", None)
+                or getattr(v.costos, "valor", None)
+                or getattr(v.costos, "costo", None)
+                or getattr(v.costos, "total", None)
+                or 0
+            )
+
+            rentabilidad_ruta["registros_semanales"].append({
+                "fecha_fin": v.fechaFin,
+                "rentabilidad": (v.pasajerosSemanal * ruta.precio_pasaje) - costo
+            })
+
+        pronostico_ruta = pronosticarRentabilidadRuta(rentabilidad_ruta)
+
+        if (
+            pronostico_ruta["estado"] == "ok"
+            and pronostico_ruta["pronosticos"]
+        ):
+
+            promedio_futuro = sum(
+                p["rentabilidad_estimada"]
+                for p in pronostico_ruta["pronosticos"]
+            ) / len(pronostico_ruta["pronosticos"])
+
+            rentabilidad_rutas[ruta.idRuta] = {
+                "valor": promedio_futuro,
+                "es_rentable": promedio_futuro > 0
+            }
+
+    return render_template(
+        "index.html",
+        rutas=rutas,
+        total_viajes=total_viajes,
+        rentabilidad_rutas=rentabilidad_rutas
+    )
 if __name__ == "__main__":
     app.run(debug=True)
