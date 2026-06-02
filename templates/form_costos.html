@@ -58,7 +58,7 @@
     </p>
 
     <button type="submit">{{ 'Actualizar' if edit_mode else 'Guardar' }} Costos</button>
-    <a href="{{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}">Cancelar</a>
+    <a href="{{ url_for('rutas.ver_detalle', ruta_id=ruta.idRuta) }}">Cancelar</a>
 </form>
 
 <script>

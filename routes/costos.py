@@ -55,7 +55,7 @@ def registrar_costos(id_viaje):
             f"Costos registrados. Rentabilidad semanal: ${resultado['rentabilidad']:.2f}.",
             "success",
         )
-        return redirect(url_for('rutas.ver_detalle', id=ruta.idRuta))
+        return redirect(url_for('rutas.ver_detalle', ruta_id=ruta.idRuta))
 
     return render_template("form_costos.html", viaje=viaje, ruta=ruta, edit_mode=False)
 
@@ -88,6 +88,6 @@ def editar_costos(id_viaje):  # ← mismo nombre que la URL
             )
         except ValueError:
             flash("Valores inválidos.", "danger")
-        return redirect(url_for('rutas.ver_detalle', id=ruta.idRuta))
+        return redirect(url_for('rutas.ver_detalle', ruta_id=ruta.idRuta))
 
     return render_template("form_costos.html", viaje=viaje, ruta=ruta, edit_mode=True)

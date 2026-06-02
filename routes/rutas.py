@@ -1,6 +1,4 @@
-import os
-import requests
-from flask import Blueprint, request, render_template, redirect, url_for
+from flask import Blueprint, request, render_template, redirect, url_for, flash
 from utils.auth import login_required
 from utils.db import db
 from models.ruta import Ruta
@@ -12,12 +10,13 @@ from services.unificacion_services import unificarRuta
 
 rutas_bp = Blueprint('rutas', __name__) 
 
-@rutas_bp.route('/detalles/<int:id>')
+@rutas_bp.route('/detalles/<int:ruta_id>')
 @login_required
-def ver_detalle(id):
-    ruta_seleccionada = Ruta.query.get_or_404(id)
+def ver_detalle(ruta_id):
+    ruta_seleccionada = Ruta.query.get_or_404(ruta_id)
     unificacion = unificarRuta()
     coincidencias = unificacion.buscarCoincidencias(ruta_seleccionada)
+    rutas_unibles = unificacion.determinarRutasUnibles(ruta_seleccionada)
     rentabilidad_ruta = determinarRentabilidadRuta(
         precio_combustible=0.0, 
         sueldo_conductor=0.0,   
@@ -37,6 +36,7 @@ def ver_detalle(id):
         "detalle_ruta.html",
         ruta=ruta_seleccionada,
         coincidencias=coincidencias,
+        rutas_unibles=rutas_unibles,
         rentabilidades=rentabilidades,
         rentabilidad_ruta=rentabilidad_ruta,
         pronostico_ruta=pronostico_ruta,
@@ -61,15 +61,15 @@ def registrar_ruta():
 
         db.session.add(nueva_ruta)
         db.session.commit()
-        return redirect(url_for('rutas.ver_detalle', id=nueva_ruta.idRuta))
+        return redirect(url_for('rutas.ver_detalle', ruta_id=nueva_ruta.idRuta))
 
     total_rutas = Ruta.query.count()
     return render_template("form_ruta.html", total_rutas=total_rutas, edit_mode=False, ruta=None)
 
-@rutas_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
+@rutas_bp.route('/editar/<int:ruta_id>', methods=['GET', 'POST'])
 @login_required
-def editar_ruta(id):
-    ruta = Ruta.query.get_or_404(id)
+def editar_ruta(ruta_id):
+    ruta = Ruta.query.get_or_404(ruta_id)
 
     if request.method == 'POST':
         nuevo_origen = request.form.get('origen')
@@ -89,14 +89,42 @@ def editar_ruta(id):
         ruta.precio_pasaje = float(request.form.get('precio_pasaje') or 0)
 
         db.session.commit()
-        return redirect(url_for('rutas.ver_detalle', id=ruta.idRuta))
+        return redirect(url_for('rutas.ver_detalle', ruta_id=ruta.idRuta))
 
     return render_template("form_ruta.html", ruta=ruta, edit_mode=True)
 
-@rutas_bp.route('/eliminar/<int:id>')
+@rutas_bp.route('/unificar/<int:ruta_id>/<int:id_ruta_candidata>', methods=['POST'])
 @login_required
-def eliminar_ruta(id):
-    ruta = Ruta.query.get_or_404(id)
+def unificar_ruta(ruta_id, id_ruta_candidata):
+    ruta_base = Ruta.query.get_or_404(ruta_id)
+    ruta_ganadora = Ruta.query.get_or_404(id_ruta_candidata)
+
+    unificacion = unificarRuta()
+    candidatos = unificacion.determinarRutasUnibles(ruta_base)
+
+    candidato = next(
+        (item for item in candidatos if item["ruta"].idRuta == id_ruta_candidata),
+        None,
+    )
+
+    if not candidato:
+        flash('No existe una recomendación válida para unificar esta ruta.', 'danger')
+        return redirect(url_for('rutas.ver_detalle', ruta_id=ruta_id))
+
+    db.session.delete(ruta_base)
+    db.session.commit()
+
+    flash(
+        f'Ruta "{ruta_base.nombreRuta}" eliminada. Se mantuvo la ruta más rentable: "{ruta_ganadora.nombreRuta}".',
+        'success',
+    )
+    return redirect(url_for('rutas.ver_detalle', ruta_id=id_ruta_candidata))
+
+
+@rutas_bp.route('/eliminar/<int:ruta_id>')
+@login_required
+def eliminar_ruta(ruta_id):
+    ruta = Ruta.query.get_or_404(ruta_id)
 
     db.session.delete(ruta)
     db.session.commit()

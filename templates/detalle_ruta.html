@@ -31,6 +31,28 @@
         {% endfor %}
     </section>
     {% endif %}
+
+    {% if rutas_unibles %}
+    <section class="info-ruta">
+        <h3>Unificación por rentabilidad</h3>
+        <p>Estas rutas cumplen la regla de similitud mayor o igual al 70% y tienen mayor rentabilidad que la ruta actual.</p>
+
+        {% for item in rutas_unibles %}
+        <div style="margin-bottom: 12px; border: 1px solid #ddd; padding: 10px; border-radius: 8px;">
+            <strong>{{ item.ruta.nombreRuta }}</strong><br>
+            Origen: {{ item.ruta.origen }}<br>
+            Destino: {{ item.ruta.destino }}<br>
+            Similitud: {{ "%.2f"|format(item.score) }}%<br>
+            Rentabilidad actual: ${{ "%.2f"|format(item.rentabilidad_actual) }}<br>
+            Rentabilidad candidata: ${{ "%.2f"|format(item.rentabilidad_candidata) }}<br>
+            Diferencia: ${{ "%.2f"|format(item.diferencia_rentabilidad) }}
+            <form method="post" action="{{ url_for('rutas.unificar_ruta', ruta_id=ruta.idRuta, id_ruta_candidata=item.ruta.idRuta) }}" style="margin-top: 8px;">
+                <button type="submit" class="btn btn-sm btn-success">Mantener esta ruta y eliminar la actual</button>
+            </form>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
     
     <h3>Registros Semanales</h3>
 

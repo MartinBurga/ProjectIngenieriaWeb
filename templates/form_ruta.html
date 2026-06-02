@@ -4,7 +4,7 @@
 {% block content %}
 <h1>{{ 'Editar Ruta' if edit_mode else 'Registro de Ruta' }}</h1>
 
-<form action="{{ url_for('rutas.editar_ruta', id=ruta.idRuta) if edit_mode else url_for('rutas.registrar_ruta') }}"
+<form action="{{ url_for('rutas.editar_ruta', ruta_id=ruta.idRuta) if edit_mode else url_for('rutas.registrar_ruta') }}"
     method="post">
 
     <label>ID:</label><br>

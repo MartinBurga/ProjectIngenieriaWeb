@@ -88,4 +88,4 @@ def eliminar_registro(id_viaje):
     db.session.delete(viaje)
     db.session.commit()
     flash("Registro eliminado.", "info")
-    return redirect(url_for('rutas.ver_detalle', id=id_ruta))
+    return redirect(url_for('rutas.ver_detalle', ruta_id=id_ruta))
