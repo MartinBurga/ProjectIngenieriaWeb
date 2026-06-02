@@ -2,47 +2,45 @@ import os
 import requests
 from flask import Blueprint, request, render_template, redirect, url_for
 from utils.auth import login_required
-from models.ruta import Ruta
 from utils.db import db
+from models.ruta import Ruta
+from services.googlemaps_services import calcularDistancia
+from services.costo_services import determinarRentabilidadRuta
+from services.pronostico_services import pronosticarRentabilidadRuta
+from services.unificacion_services import unificarRuta
+
 
 rutas_bp = Blueprint('rutas', __name__) 
-
-def calcularDistancia (origen, destino):
-    api_key = os.getenv('GOOGLE_MAPS_API_KEY')
-    url = "https://routes.googleapis.com/directions/v2:computeRoutes"
-    
-    headers = {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": api_key,
-        "X-Goog-FieldMask": "routes.distanceMeters,routes.polyline.encodedPolyline"
-    }
-
-    payload = {
-        "origin": {"address": origen},
-        "destination": {"address": destino},
-        "travelMode": "DRIVE"
-    }
-
-    try:
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-        data = response.json()
-        if 'routes' in data and len(data['routes']) > 0:
-            ruta_data = data['routes'][0]
-            distancia = round(ruta_data['distanceMeters'] / 1000.0, 1)
-            polyline = ruta_data['polyline']['encodedPolyline']
-            return distancia, polyline
-    except Exception as e:
-        print(f"Error en Google Maps: {e}")
-    
-    return 0.0, ""
 
 @rutas_bp.route('/detalles/<int:id>')
 @login_required
 def ver_detalle(id):
     ruta_seleccionada = Ruta.query.get_or_404(id)
+    unificacion = unificarRuta()
+    coincidencias = unificacion.buscarCoincidencias(ruta_seleccionada)
+    rentabilidad_ruta = determinarRentabilidadRuta(
+        precio_combustible=0.0, 
+        sueldo_conductor=0.0,   
+        valor_mantenimiento=0.0,  
+        precio_pasaje=ruta_seleccionada.precio_pasaje,
+        pasajeros=0,  
+        distancia=ruta_seleccionada.distancia,
+        ruta=ruta_seleccionada,
+    )
+    pronostico_ruta = pronosticarRentabilidadRuta(rentabilidad_ruta)
+    rentabilidades = {
+        registro["id_viaje"]: registro
+        for registro in rentabilidad_ruta["registros_semanales"]
+    }
     
-    return render_template("detalle_ruta.html", ruta=ruta_seleccionada)
-
+    return render_template(
+        "detalle_ruta.html",
+        ruta=ruta_seleccionada,
+        coincidencias=coincidencias,
+        rentabilidades=rentabilidades,
+        rentabilidad_ruta=rentabilidad_ruta,
+        pronostico_ruta=pronostico_ruta,
+    )
 @rutas_bp.route('/registrar', methods=['GET', 'POST'])
 @login_required
 def registrar_ruta():
@@ -63,7 +61,7 @@ def registrar_ruta():
 
         db.session.add(nueva_ruta)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('rutas.ver_detalle', id=nueva_ruta.idRuta))
 
     total_rutas = Ruta.query.count()
     return render_template("form_ruta.html", total_rutas=total_rutas, edit_mode=False, ruta=None)
@@ -78,7 +76,12 @@ def editar_ruta(id):
         nuevo_destino = request.form.get('destino')
         
         if ruta.origen != nuevo_origen or ruta.destino != nuevo_destino:
-            ruta.distancia = calcularDistancia(nuevo_origen, nuevo_destino)
+            totalDistancia, polyline = calcularDistancia(
+                nuevo_origen,
+                nuevo_destino
+            )
+            ruta.distancia = totalDistancia
+            ruta.polyline = polyline
 
         ruta.nombreRuta = request.form.get('nombre_ruta')
         ruta.origen = nuevo_origen
@@ -86,7 +89,7 @@ def editar_ruta(id):
         ruta.precio_pasaje = float(request.form.get('precio_pasaje') or 0)
 
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('rutas.ver_detalle', id=ruta.idRuta))
 
     return render_template("form_ruta.html", ruta=ruta, edit_mode=True)
 

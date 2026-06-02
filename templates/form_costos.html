@@ -32,7 +32,7 @@
 
     <div style="display: flex; gap: 10px;">
         <div style="flex:1">
-            <label>Combustible ($):</label>
+            <label>Combustible ($/km):</label>
             <input type="number" step="0.01" min="0" name="precioCombustible"
                 value="{{ viaje.costos.precioCombustible if edit_mode else '' }}" placeholder="0.00" required
                 style="width: 100%;">
@@ -44,7 +44,7 @@
                 style="width: 100%;">
         </div>
         <div style="flex:1">
-            <label>Mantenimiento ($):</label>
+            <label>Mantenimiento ($/100 km):</label>
             <input type="number" step="0.01" min="0" name="valorMantenimiento"
                 value="{{ viaje.costos.valorMantenimiento if edit_mode else '' }}" placeholder="0.00" required
                 style="width: 100%;">
@@ -63,13 +63,14 @@
 
 <script>
     const ingresos = parseFloat("{{ (viaje.pasajerosSemanal * ruta.precio_pasaje)|round(2) }}");
+    const distanciaKm = parseFloat("{{ ruta.distancia|round(2) }}");
     const campos = ['precioCombustible', 'sueldoConductor', 'valorMantenimiento'];
 
     function actualizar() {
-        const total = campos.reduce((acc, name) => {
-            const el = document.querySelector('[name="' + name + '"]');
-            return acc + (parseFloat(el.value) || 0);
-        }, 0);
+        const combustible = parseFloat(document.querySelector('[name="precioCombustible"]').value) || 0;
+        const sueldo = parseFloat(document.querySelector('[name="sueldoConductor"]').value) || 0;
+        const mantenimiento = parseFloat(document.querySelector('[name="valorMantenimiento"]').value) || 0;
+        const total = sueldo + (distanciaKm * combustible) + ((distanciaKm / 100) * mantenimiento);
         document.getElementById('total-costos').textContent = total.toFixed(2);
         const rent = ingresos - total;
         const span = document.getElementById('rentabilidad');

@@ -12,8 +12,65 @@
         <p><strong>Distancia:</strong> {{ ruta.distancia }} km</p>
         <p><strong>Precio por pasaje:</strong> ${{ ruta.precio_pasaje }}</p>
     </div>
+
+    {% if coincidencias %}
+    <section class="info-ruta">
+        <h3>Recomendacion de unificacion</h3>
+        <p>
+            Esta ruta tiene coincidencias superiores al 80%.
+            Podria ser factible unificarla con rutas similares.
+        </p>
+
+        {% for c in coincidencias %}
+        <div>
+            <strong>{{ c.ruta.nombreRuta }}</strong><br>
+            Origen: {{ c.ruta.origen }}<br>
+            Destino: {{ c.ruta.destino }}<br>
+            Similitud: {{ "%.2f"|format(c.score) }}%
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
     
     <h3>Registros Semanales</h3>
+
+    {% if rentabilidad_ruta["registros_semanales"] %}
+    <div class="info-ruta">
+        <p><strong>Rentabilidad acumulada:</strong> ${{ "%.2f"|format(rentabilidad_ruta["rentabilidad"]) }}</p>
+    </div>
+
+    <h3>Pronostico SARIMA</h3>
+    {% if pronostico_ruta.estado == 'ok' %}
+    <p>
+        Modelo usado:
+        SARIMA{{ pronostico_ruta.modelo.order }}{{ pronostico_ruta.modelo.seasonal_order }}
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Semana</th>
+                <th>Fecha estimada</th>
+                <th>Rentabilidad estimada</th>
+                <th>Limite inferior</th>
+                <th>Limite superior</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in pronostico_ruta.pronosticos %}
+            <tr>
+                <td>{{ item.semana }}</td>
+                <td>{{ item.fecha }}</td>
+                <td>${{ "%.2f"|format(item.rentabilidad_estimada) }}</td>
+                <td>${{ "%.2f"|format(item.limite_inferior) }}</td>
+                <td>${{ "%.2f"|format(item.limite_superior) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>{{ pronostico_ruta.mensaje }}</p>
+    {% endif %}
+    {% endif %}
 
     {% if ruta.viajes %}
     <table class="table">
@@ -37,9 +94,10 @@
                     <td>{{ viaje.pasajerosSemanal }}</td>
                     <td>${{ "%.2f"|format(ingresos) }}</td>
 
-                    {% if viaje.costo %}
-                        {% set rentabilidad = ingresos - viaje.costo.total %}
-                        <td>${{ "%.2f"|format(viaje.costo.total) }}</td>
+                    {% set resultado = rentabilidades.get(viaje.idViaje) %}
+                    {% if viaje.costos and resultado %}
+                        {% set rentabilidad = resultado.rentabilidad %}
+                        <td>${{ "%.2f"|format(resultado.costos_totales) }}</td>
                         <td>
                             ${{ "%.2f"|format(rentabilidad) }} {{ '▲' if rentabilidad >= 0 else '▼' }}
                         </td>

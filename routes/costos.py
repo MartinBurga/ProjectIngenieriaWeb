@@ -3,13 +3,13 @@ from models.costo import Costo
 from models.viajeRegistro import ViajeRegistro
 from utils.db import db
 from utils.auth import login_required
+from services.costo_services import calcularRentabilidadCostos
 
 costos_bp = Blueprint('costos', __name__)
 
-
 @costos_bp.route('/viaje/<int:id_viaje>/registrar-costos', methods=['GET', 'POST'])
 @login_required
-def registrar_costos(id_viaje):  # ← mismo nombre que la URL
+def registrar_costos(id_viaje): 
     viaje = ViajeRegistro.query.get_or_404(id_viaje)
     ruta  = viaje.ruta
 
@@ -33,7 +33,14 @@ def registrar_costos(id_viaje):  # ← mismo nombre que la URL
 
         if None in (combustible, sueldo, mantenimiento):
             flash("Los costos deben ser valores numéricos no negativos.", "danger")
-            return render_template("form_costo.html", viaje=viaje, ruta=ruta, edit_mode=False)
+            return render_template("form_costos.html", viaje=viaje, ruta=ruta, edit_mode=False)
+
+        resultado = calcularRentabilidadCostos(
+            viaje,
+            precio_combustible=combustible,
+            sueldo_conductor=sueldo,
+            valor_mantenimiento=mantenimiento,
+        )
 
         nuevo_costo = Costo(
             id_viaje=id_viaje,
@@ -44,7 +51,10 @@ def registrar_costos(id_viaje):  # ← mismo nombre que la URL
         db.session.add(nuevo_costo)
         db.session.commit()
 
-        flash("Costos registrados correctamente.", "success")
+        flash(
+            f"Costos registrados. Rentabilidad semanal: ${resultado['rentabilidad']:.2f}.",
+            "success",
+        )
         return redirect(url_for('rutas.ver_detalle', id=ruta.idRuta))
 
     return render_template("form_costos.html", viaje=viaje, ruta=ruta, edit_mode=False)
@@ -65,8 +75,17 @@ def editar_costos(id_viaje):  # ← mismo nombre que la URL
             costos.precioCombustible  = max(0.0, float(request.form.get('precioCombustible', 0)))
             costos.sueldoConductor    = max(0.0, float(request.form.get('sueldoConductor', 0)))
             costos.valorMantenimiento = max(0.0, float(request.form.get('valorMantenimiento', 0)))
+            resultado = calcularRentabilidadCostos(
+                viaje,
+                precio_combustible=costos.precioCombustible,
+                sueldo_conductor=costos.sueldoConductor,
+                valor_mantenimiento=costos.valorMantenimiento,
+            )
             db.session.commit()
-            flash("Costos actualizados.", "success")
+            flash(
+                f"Costos actualizados. Rentabilidad semanal: ${resultado['rentabilidad']:.2f}.",
+                "success",
+            )
         except ValueError:
             flash("Valores inválidos.", "danger")
         return redirect(url_for('rutas.ver_detalle', id=ruta.idRuta))

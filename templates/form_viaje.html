@@ -17,7 +17,6 @@
 
     <form action="{{ url_for('viaje_registros.crear_registro', id_ruta=ruta.idRuta) }}" method="POST">
 
-        <!-- FK: Ruta — dropdown de solo lectura, el id llega por hidden -->
         <div class="form-group">
             <label for="sel_ruta">Ruta asignada</label>
             <select id="sel_ruta" disabled>
@@ -42,7 +41,6 @@
             </div>
         </div>
 
-        <!-- Pasajeros -->
         <div class="form-group">
             <label for="pasajeros">Pasajeros transportados en la semana</label>
             <input type="number" id="pasajeros" name="pasajeros"

@@ -12,3 +12,11 @@ class Ruta(db.Model):
     polyline = db.Column(db.Text, nullable=True)
     # Relacion FK
     viajes = db.relationship('ViajeRegistro', backref='ruta', cascade="all, delete-orphan")
+
+    def __init__(self, nombreRuta, origen, destino, distancia, precio_pasaje, polyline=""):
+        self.nombreRuta = nombreRuta
+        self.origen = origen
+        self.destino = destino
+        self.distancia = distancia
+        self.precio_pasaje = precio_pasaje
+        self.polyline = polyline

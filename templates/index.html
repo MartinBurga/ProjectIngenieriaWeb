@@ -31,8 +31,8 @@
                     <td>{{ ruta.destino }}</td>
                     <td>{{ ruta.distancia }} km</td>
                     <td>${{ ruta.precio_pasaje }}</td>
-                    <td class="action-buttons>
-                        <a href=" {{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}" class="btn btn-info">Detalles</a>
+                    <td class="action-buttons">
+                        <a href="{{ url_for('rutas.ver_detalle', id=ruta.idRuta) }}" class="btn btn-info">Detalles</a>
 
                         <a href="{{ url_for('rutas.editar_ruta', id=ruta.idRuta) }}" class="btn btn-warning">Editar</a>
 
