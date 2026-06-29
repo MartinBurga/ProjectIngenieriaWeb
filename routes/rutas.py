@@ -1,19 +1,21 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from utils.auth import login_required
-from utils.db import db
-from models.ruta import Ruta
+from factories.ruta_factory import RutaFactory, RutaTransporteFactory
+from repositories.ruta_repository import DbRutaRepository, IRutaRepository
 from services.googlemaps_services import calcularDistancia
 from services.costo_services import determinarRentabilidadRuta
 from services.pronostico_services import pronosticarRentabilidadRuta
 from services.unificacion_services import unificarRuta
 
 
-rutas_bp = Blueprint('rutas', __name__) 
+rutas_bp = Blueprint('rutas', __name__)
+ruta_repository: IRutaRepository = DbRutaRepository()
+ruta_factory: RutaFactory = RutaTransporteFactory()
 
 @rutas_bp.route('/detalles/<int:ruta_id>')
 @login_required
 def ver_detalle(ruta_id):
-    ruta_seleccionada = Ruta.query.get_or_404(ruta_id)
+    ruta_seleccionada = ruta_repository.obtenerId(ruta_id)
     unificacion = unificarRuta()
     coincidencias = unificacion.buscarCoincidencias(ruta_seleccionada)
     rutas_unibles = unificacion.determinarRutasUnibles(ruta_seleccionada)
@@ -48,28 +50,23 @@ def registrar_ruta():
         origen = request.form.get('origen')
         destino = request.form.get('destino')
 
-        totalDistancia, polyline = calcularDistancia(origen, destino)
-
-        nueva_ruta = Ruta(
-            nombreRuta=request.form.get('nombre_ruta'),
+        nueva_ruta = ruta_factory.crear(
+            nombre_ruta=request.form.get('nombre_ruta'),
             origen=origen,
             destino=destino,
-            distancia=totalDistancia,
             precio_pasaje=float(request.form.get('precio_pasaje') or 0),
-            polyline=polyline
         )
 
-        db.session.add(nueva_ruta)
-        db.session.commit()
+        ruta_repository.agregar(nueva_ruta)
         return redirect(url_for('rutas.ver_detalle', ruta_id=nueva_ruta.idRuta))
 
-    total_rutas = Ruta.query.count()
+    total_rutas = ruta_repository.contar()
     return render_template("form_ruta.html", total_rutas=total_rutas, edit_mode=False, ruta=None)
 
 @rutas_bp.route('/editar/<int:ruta_id>', methods=['GET', 'POST'])
 @login_required
 def editar_ruta(ruta_id):
-    ruta = Ruta.query.get_or_404(ruta_id)
+    ruta = ruta_repository.obtenerId(ruta_id)
 
     if request.method == 'POST':
         nuevo_origen = request.form.get('origen')
@@ -88,7 +85,7 @@ def editar_ruta(ruta_id):
         ruta.destino = nuevo_destino
         ruta.precio_pasaje = float(request.form.get('precio_pasaje') or 0)
 
-        db.session.commit()
+        ruta_repository.guardar()
         return redirect(url_for('rutas.ver_detalle', ruta_id=ruta.idRuta))
 
     return render_template("form_ruta.html", ruta=ruta, edit_mode=True)
@@ -96,8 +93,8 @@ def editar_ruta(ruta_id):
 @rutas_bp.route('/unificar/<int:ruta_id>/<int:id_ruta_candidata>', methods=['POST'])
 @login_required
 def unificar_ruta(ruta_id, id_ruta_candidata):
-    ruta_base = Ruta.query.get_or_404(ruta_id)
-    ruta_ganadora = Ruta.query.get_or_404(id_ruta_candidata)
+    ruta_base = ruta_repository.obtenerId(ruta_id)
+    ruta_ganadora = ruta_repository.obtenerId(id_ruta_candidata)
 
     unificacion = unificarRuta()
     candidatos = unificacion.determinarRutasUnibles(ruta_base)
@@ -111,8 +108,7 @@ def unificar_ruta(ruta_id, id_ruta_candidata):
         flash('No existe una recomendación válida para unificar esta ruta.', 'danger')
         return redirect(url_for('rutas.ver_detalle', ruta_id=ruta_id))
 
-    db.session.delete(ruta_base)
-    db.session.commit()
+    ruta_repository.eliminar(ruta_base)
 
     flash(
         f'Ruta "{ruta_base.nombreRuta}" eliminada. Se mantuvo la ruta más rentable: "{ruta_ganadora.nombreRuta}".',
@@ -124,9 +120,8 @@ def unificar_ruta(ruta_id, id_ruta_candidata):
 @rutas_bp.route('/eliminar/<int:ruta_id>')
 @login_required
 def eliminar_ruta(ruta_id):
-    ruta = Ruta.query.get_or_404(ruta_id)
+    ruta = ruta_repository.obtenerId(ruta_id)
 
-    db.session.delete(ruta)
-    db.session.commit()
+    ruta_repository.eliminar(ruta)
 
     return redirect(url_for('index'))

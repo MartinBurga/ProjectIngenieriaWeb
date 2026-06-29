@@ -366,3 +366,14 @@ El proyecto ya cuenta con una arquitectura modular:
 - `templates/` contiene las vistas HTML renderizadas con Jinja2.
 
 Esta separacion facilita mantener la aplicacion, probar reglas de negocio y extender nuevas funcionalidades.
+
+## Buenas practicas aplicadas: SOLID y patrones de diseno
+
+Se aplicaron buenas practicas en el modulo de rutas:
+
+- **DIP**: `routes/rutas.py` y `app.py` dependen de `IRutaRepository`, no directamente de SQLAlchemy.
+- **OCP**: la creacion de rutas se delega a `RutaFactory`, permitiendo extender nuevos tipos de ruta sin cambiar el controlador.
+- **Repository Pattern**: `DbRutaRepository` encapsula las operaciones de base de datos sobre `Ruta`.
+- **Factory Method**: `RutaTransporteFactory` centraliza la creacion de rutas, incluyendo distancia y polyline.
+
+Archivos principales: `repositories/ruta_repository.py`, `factories/ruta_factory.py`, `routes/rutas.py` y `app.py`.

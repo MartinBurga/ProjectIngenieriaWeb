@@ -1,23 +1,20 @@
+import os
+
+import pymysql
 from dotenv import load_dotenv
+from flask import Flask, render_template
 
 from services.pronostico_services import pronosticarRentabilidadRuta
-load_dotenv()
-from flask import Flask, render_template, Blueprint
-from utils.db import db
-import pymysql, os
-
-
-from utils.auth import login_required
-
-from models.ruta import Ruta
-from models.viajeRegistro import ViajeRegistro
-from models.costo import Costo
-
+from repositories.ruta_repository import DbRutaRepository, IRutaRepository
+from routes.costos import costos_bp
 from routes.rutas import rutas_bp
 from routes.usuarios import usuarios_bp
-from routes.costos import costos_bp
 from routes.viajeRegistros import viaje_registros_bp
+from utils.auth import login_required
+from utils.db import db
 
+
+load_dotenv()
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
@@ -32,6 +29,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.getenv('SECRET_KEY')
 
 db.init_app(app) 
+ruta_repository: IRutaRepository = DbRutaRepository()
 
 @app.route("/")
 def home():
@@ -40,7 +38,7 @@ def home():
 @app.route("/index")
 @login_required
 def index():
-    rutas = Ruta.query.all()
+    rutas = ruta_repository.listar()
     total_viajes = sum(len(ruta.viajes) for ruta in rutas)
 
     rentabilidad_rutas = {}
