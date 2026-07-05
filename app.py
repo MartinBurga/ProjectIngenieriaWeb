@@ -2,10 +2,11 @@ import os
 
 import pymysql
 from dotenv import load_dotenv
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 
 from services.pronostico_services import pronosticarRentabilidadRuta
 from repositories.ruta_repository import DbRutaRepository, IRutaRepository
+from routes.api import api_bp
 from routes.costos import costos_bp
 from routes.rutas import rutas_bp
 from routes.usuarios import usuarios_bp
@@ -18,6 +19,7 @@ load_dotenv()
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
+app.register_blueprint(api_bp)
 app.register_blueprint(rutas_bp)
 app.register_blueprint(usuarios_bp)
 app.register_blueprint(costos_bp)
@@ -30,10 +32,22 @@ app.secret_key = os.getenv('SECRET_KEY')
 
 db.init_app(app) 
 ruta_repository: IRutaRepository = DbRutaRepository()
+FRONTEND_DIST = os.path.join(app.root_path, "frontend", "dist")
 
 @app.route("/")
 def home():
     return render_template('login.html')
+
+@app.route("/app")
+@app.route("/app/")
+@app.route("/app/<path:path>")
+def react_app(path=None):
+    if path:
+        asset_path = os.path.join(FRONTEND_DIST, path)
+        if os.path.isfile(asset_path):
+            return send_from_directory(FRONTEND_DIST, path)
+
+    return send_from_directory(FRONTEND_DIST, "index.html")
 
 @app.route("/index")
 @login_required
